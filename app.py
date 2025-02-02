@@ -14,13 +14,19 @@ class Student(db.Model):
 with app.app_context():
     db.create_all()
 
-# 📌 학생 목록 조회 (웹 페이지)
+# 📌 학생 점수 확인 페이지 (학생용)
 @app.route('/')
 def index():
     students = Student.query.all()
-    return render_template('index.html', students=students)
+    return render_template('index.html', students=students, admin=False)
 
-# 📌 특정 학생 점수 조회 (API)
+# 📌 관리자 점수 수정 페이지 (관리자용)
+@app.route('/admin')
+def admin():
+    students = Student.query.all()
+    return render_template('index.html', students=students, admin=True)
+
+# 📌 특정 학생 점수 조회 API
 @app.route('/student/<int:student_id>', methods=['GET'])
 def get_student(student_id):
     student = Student.query.get(student_id)
@@ -28,7 +34,7 @@ def get_student(student_id):
         return jsonify({'error': 'Student not found'}), 404
     return jsonify({'name': student.name, 'points': student.points})
 
-# 📌 점수 추가 (API)
+# 📌 점수 추가 API
 @app.route('/student/<int:student_id>/add', methods=['POST'])
 def add_points(student_id):
     student = Student.query.get(student_id)
@@ -40,7 +46,7 @@ def add_points(student_id):
     db.session.commit()
     return jsonify({'message': 'Points added successfully', 'points': student.points})
 
-# 📌 점수 차감 (API)
+# 📌 점수 차감 API
 @app.route('/student/<int:student_id>/subtract', methods=['POST'])
 def subtract_points(student_id):
     student = Student.query.get(student_id)
