@@ -22,9 +22,38 @@
 </head>
 <body>
     <h1>학생 점수 관리</h1>
+
+    <h3>반별 조회</h3>
+    <p>
+        <a href="/">전체</a> |
+        <a href="/class/1">1반</a> |
+        <a href="/class/2">2반</a> |
+        <a href="/class/3">3반</a> |
+        <a href="/class/4">4반</a> |
+        <a href="/class/5">5반</a> |
+        <a href="/class/6">6반</a>
+    </p>
+
+    {% if admin %}
+    <h3>새로운 학생 추가</h3>
+    <form action="/add-student" method="POST">
+        <input type="text" name="name" placeholder="학생 이름 입력" required>
+        <select name="class_number" required>
+            <option value="1">1반</option>
+            <option value="2">2반</option>
+            <option value="3">3반</option>
+            <option value="4">4반</option>
+            <option value="5">5반</option>
+            <option value="6">6반</option>
+        </select>
+        <button type="submit">학생 추가</button>
+    </form>
+    {% endif %}
+
     <table border="1">
         <tr>
             <th>이름</th>
+            <th>반</th>
             <th>점수</th>
             {% if admin %}
             <th>관리</th>
@@ -33,23 +62,16 @@
         {% for student in students %}
         <tr>
             <td>{{ student.name }}</td>
+            <td>{{ student.class_number }}반</td>
             <td>{{ student.points }}</td>
             {% if admin %}
             <td>
                 <button onclick="updatePoints({{ student.id }}, 'add', 1)">+1</button>
                 <button onclick="updatePoints({{ student.id }}, 'subtract', 1)">-1</button>
-                <button onclick="updatePoints({{ student.id }}, 'add', 5)">+5</button>
-                <button onclick="updatePoints({{ student.id }}, 'subtract', 5)">-5</button>
             </td>
             {% endif %}
         </tr>
         {% endfor %}
     </table>
-
-    {% if admin %}
-    <p><a href="/">학생 페이지로 이동</a></p>
-    {% else %}
-    <p><a href="/admin">관리자 페이지로 이동</a></p>
-    {% endif %}
 </body>
 </html>
