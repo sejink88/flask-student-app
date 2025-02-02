@@ -1,53 +1,56 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     points = db.Column(db.Integer, default=0)
 
-
 with app.app_context():
     db.create_all()
 
-
-# 학생 점수 조회 + HTML 페이지 렌더링
+# 📌 학생 목록 조회 (웹 페이지)
 @app.route('/')
 def index():
-    students = Student.query.all()  # 모든 학생 불러오기
+    students = Student.query.all()
     return render_template('index.html', students=students)
 
-
-# 학생 점수 변경 (폼에서 POST 요청 받기)
-@app.route('/update_points', methods=['POST'])
-def update_points():
-    student_id = int(request.form['student_id'])
-    points = int(request.form['points'])
-
+# 📌 특정 학생 점수 조회 (API)
+@app.route('/student/<int:student_id>', methods=['GET'])
+def get_student(student_id):
     student = Student.query.get(student_id)
-    if student:
-        student.points += points
-        db.session.commit()
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+    return jsonify({'name': student.name, 'points': student.points})
 
-    return redirect(url_for('index'))  # 변경 후 다시 메인 페이지로 이동
+# 📌 점수 추가 (API)
+@app.route('/student/<int:student_id>/add', methods=['POST'])
+def add_points(student_id):
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
 
-
-# 새로운 학생 추가
-@app.route('/add_student', methods=['POST'])
-def add_student():
-    name = request.form['name']
-    new_student = Student(name=name, points=0)
-    db.session.add(new_student)
+    data = request.get_json()
+    student.points += data.get('points', 0)
     db.session.commit()
-    return redirect(url_for('index'))
+    return jsonify({'message': 'Points added successfully', 'points': student.points})
 
+# 📌 점수 차감 (API)
+@app.route('/student/<int:student_id>/subtract', methods=['POST'])
+def subtract_points(student_id):
+    student = Student.query.get(student_id)
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+
+    data = request.get_json()
+    student.points -= data.get('points', 0)
+    db.session.commit()
+    return jsonify({'message': 'Points subtracted successfully', 'points': student.points})
 
 if __name__ == '__main__':
     app.run(debug=True)
