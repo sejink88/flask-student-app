@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>학생 점수 관리</title>
+    <!-- Bootstrap CSS 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { margin: 20px; }
+        h1 { text-align: center; }
+        .table { margin-top: 20px; }
+        .btn { margin: 2px; }
+        .container { max-width: 800px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 학생 점수 관리 시스템</h1>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>학생 ID</th>
+                    <th>이름</th>
+                    <th>점수</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td><strong>{{ student.points }}</strong></td>
+                    <td>
+                        <form action="/update_points" method="POST" style="display:inline;">
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <input type="hidden" name="points" value="1">
+                            <button type="submit" class="btn btn-success">+1</button>
+                        </form>
+                        <form action="/update_points" method="POST" style="display:inline;">
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <input type="hidden" name="points" value="-1">
+                            <button type="submit" class="btn btn-danger">-1</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>🆕 학생 추가</h2>
+        <form action="/add_student" method="POST" class="input-group mb-3">
+            <input type="text" name="name" class="form-control" placeholder="학생 이름 입력" required>
+            <button type="submit" class="btn btn-primary">추가</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
