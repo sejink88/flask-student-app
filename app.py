@@ -94,3 +94,45 @@ if __name__ == '__main__':
         db.create_all()
         os.system("flask db upgrade")  # 🚀 서버 시작 시 자동으로 마이그레이션 실행
     app.run(debug=True)
+
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'  # 세션을 위한 키 설정
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
+
+# 사용자 모델 정의 (관리자 계정 포함)
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(80), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+# 🔹 관리자 로그인 페이지
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        admin = User.query.filter_by(username=username, is_admin=True).first()
+
+        if admin and admin.password == password:
+            session['admin'] = True
+            return redirect('/dashboard')  # 로그인 성공 시 관리자 페이지로 이동
+        else:
+            return "로그인 실패. 다시 시도하세요."
+
+    return render_template('admin_login.html')
+
+# 🔹 관리자 페이지 (로그인한 관리자만 접근 가능)
+@app.route('/dashboard')
+def dashboard():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    return "관리자 페이지"
+
+if __name__ == '__main__':
+    db.create_all()  # 데이터베이스 자동 생성
+    app.run(debug=True)
